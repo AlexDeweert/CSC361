@@ -16,7 +16,7 @@ class Server:
     def __init__(self):
         self._port = 8888
         #self._host = socket.gethostbyname(socket.gethostname())
-        self._host = "142.104.74.123"
+        self._host = "192.168.122.203"
         print("HOST IP: {}".format(self._host))
 
         try:
