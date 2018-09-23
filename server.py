@@ -15,7 +15,9 @@ class Server:
 
     def __init__(self):
         self._port = 8888
-        self._host = socket.gethostbyname(socket.gethostname())
+        #self._host = socket.gethostbyname(socket.gethostname())
+        self._host = "142.104.74.123"
+        print("HOST IP: {}".format(self._host))
 
         try:
             self._socket = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
