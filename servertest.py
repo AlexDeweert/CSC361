@@ -59,17 +59,18 @@ class Server:
 
                 print("")
 
-
             except IOError:
                 print "IOError: Cannot open file {}".format(filename)
                 connection_socket.send("HTTP/1.1 404 Not Found\r\n\r\n".encode())
                 connection_socket.close()
 
-            except IndexError:
-                print "IndexError"
+            except IndexError as e:
+                print "IndexError: {}".format(e)
                 connection_socket.send("HTTP/1.1 500 Internal Server Error\r\n\r\n".encode())
                 connection_socket.close()
 
+            except Exception as e:
+                print "Unknown exception: {}".format(e)
 
 if __name__ == "__main__":
     s = Server()

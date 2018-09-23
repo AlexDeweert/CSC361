@@ -1,41 +1,79 @@
-#import socket module
-from socket import *
-import sys # In order to terminate the program
+# server.py
 
-serverSocket = socket(AF_INET, SOCK_STREAM)
+# Lab 1
+# CSC 361 - UVIC - Fall 2018
+# Prof. Mantis CHENG
+# Student: Alex L. DEWEERT
+# ID: V00855767
 
-#Prepare a server socket DONE
-?????????????????
+import socket
+import sys
+import threading
 
-while True:
-    #Establish the connection
-    print('Ready to serve...')
-    connectionSocket, addr =  ???????????????
+class Server:
 
-    try:
-        message = ?????????????????
-        filename = message.split()[1]
-        f = open(filename[1:])
 
-        # for line in f:
-        #     connectionSocket.send(line.encode())
+    def __init__(self):
+        self._port = 8888
+        self._host = socket.gethostbyname(socket.gethostname())
 
-        outputdata = f.readlines
-        #Send one HTTP header line into socket
-        ?????????????
+        try:
+            self._socket = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
+            self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        #Send the content of the requested file to the client
-        for i in range(0, len(outputdata)):
-            connectionSocket.send(outputdata[i].encode())
-        connectionSocket.send("\r\n".encode())
+            print("Created socket object...")
+        except socket.error, msg:
+            print 'Failed to create socket. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
+            sys.exit()
 
-        connectionSocket.close()
-    except IOError:
-        #Send response message for file not found
-        ????????????
+        try:
+            self._socket.bind( (self._host, self._port) )
+            print("...Socket object bound successfully")
+        except socket.error, msg:
+            print 'Failed to bind socket. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
+            sys.exit()
 
-        #Close client socket
-        ????????????
+    def listen(self):
+        self._socket.listen(5);
+        print("Listening on port: ", self._port)
+        while 1:
+            connection_socket, addr = self._socket.accept()
+            print("Connected {}:{}".format( addr[0],addr[1] ))
+            request = connection_socket.recv(1024)
+            print "Request {}".format(request)
 
-serverSocket.close()
-sys.exit()#Terminate the program after sending the corresponding data
+            try:
+                filename = request.split()[1]
+                outputmessage = ""
+                print("FILENAME REQUESTED: {}".format(filename))
+                f = open(filename[1:])
+                connection_socket.send("HTTP/1.1 200 OK\r\n\r\n".encode())
+
+                for line in f:
+                     outputmessage += line
+
+                print "SENDING:\n--------------------------------------------------------------------------------\n{}".format(outputmessage)
+                connection_socket.send(outputmessage.encode())
+                connection_socket.send("\r\n\r\n".encode())
+                print "--------------------------------------------------------------------------------\n"
+                connection_socket.close()
+
+                print("")
+
+            except IOError:
+                print "IOError: Cannot open file {}".format(filename)
+                connection_socket.send("HTTP/1.1 404 Not Found\r\n\r\n".encode())
+                connection_socket.close()
+
+            except IndexError as e:
+                print "IndexError: {}".format(e)
+                connection_socket.send("HTTP/1.1 500 Internal Server Error\r\n\r\n".encode())
+                connection_socket.close()
+
+            except Exception as e:
+                print "Unknown exception: {}".format(e)
+
+if __name__ == "__main__":
+    s = Server()
+    print("tcpserver.py started from command line")
+    s.listen()
