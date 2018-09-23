@@ -15,7 +15,7 @@ class Server:
 
     def __init__(self):
         self._port = 8888
-        self._host = "134.87.162.240"
+        self._host = socket.gethostbyname(socket.gethostname())
 
         try:
             self._socket = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
@@ -33,23 +33,42 @@ class Server:
             print 'Failed to bind socket. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
             sys.exit()
 
-
     def listen(self):
         self._socket.listen(5);
         print("Listening on port: ", self._port)
         while 1:
-            client_sock, addr = self._socket.accept()
+            connection_socket, addr = self._socket.accept()
             print("Connected {}:{}".format( addr[0],addr[1] ))
-            client_handler = threading.Thread(
-                target=self.handleConnection,
-                args=(client_sock,))
-            client_handler.start()
+            request = connection_socket.recv(1024)
+            print "Request {}".format(request)
 
-    def handleConnection(self, client_sock):
-        request = client_sock.recv(1024)
-        print "Received {}".format(request)
-        client_sock.send("Server success response to {}".format(request))
-        client_sock.close()
+            try:
+                filename = request.split()[1]
+                outputmessage = ""
+                print("FILENAME REQUESTED: {}".format(filename))
+                f = open(filename[1:])
+                connection_socket.send("HTTP/1.1 200 OK\r\n\r\n".encode())
+
+                for line in f:
+                     outputmessage += line
+                     print "Server sending {}".format(line).strip()
+
+                connection_socket.send(outputmessage.encode())
+                connection_socket.send("\r\n\r\n".encode())
+                connection_socket.close()
+
+                print("")
+
+
+            except IOError:
+                print "IOError: Cannot open file {}".format(filename)
+                connection_socket.send("HTTP/1.1 404 Not Found\r\n\r\n".encode())
+                connection_socket.close()
+
+            except IndexError:
+                print "IndexError"
+                connection_socket.send("HTTP/1.1 500 Internal Server Error\r\n\r\n".encode())
+                connection_socket.close()
 
 
 if __name__ == "__main__":

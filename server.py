@@ -17,7 +17,10 @@ while True:
         filename = message.split()[1]
         f = open(filename[1:])
 
-        outputdata = ???????????????
+        # for line in f:
+        #     connectionSocket.send(line.encode())
+
+        outputdata = f.readlines
         #Send one HTTP header line into socket
         ?????????????
 
