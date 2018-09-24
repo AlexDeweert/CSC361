@@ -46,7 +46,7 @@ class Server:
 
             try:
                 filename = request.split()[1]
-                outputmessage = "HTTP/1.1 200 OK\r\n"
+                outputmessage = "HTTP/1.1 200 OK\r\n\r\n"
                 print("FILENAME REQUESTED: {}".format(filename))
                 f = open(filename[1:])
                 #connection_socket.send("HTTP/1.1 200 OK\r\n\r\n".encode())
